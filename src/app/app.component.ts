@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { interval, map } from 'rxjs';
 
 @Component({
@@ -9,12 +9,19 @@ import { interval, map } from 'rxjs';
 export class AppComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   clickCount = signal<number>(0);
+  interval = signal<number>(0)
+  doubleInterval = computed(() => this.interval() * 2)
   constructor(){
     effect(()=> {
       console.log(`button was clicked ${this.clickCount()} times`)
     })
   }
   ngOnInit(): void {
+    setInterval(() => {
+      this.interval.update(prevValueNumber => 
+        prevValueNumber + 1
+      )
+    }, 1000);
     // const subscription = interval(1000).pipe(
     //   // we will pass a function to map and the new value wil be repalced as observalbe value
     //   map((val) => val * 2)
