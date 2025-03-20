@@ -1,5 +1,5 @@
 import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { interval, map } from 'rxjs';
 
 @Component({
@@ -11,8 +11,14 @@ export class AppComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   clickCount = signal<number>(0);
   clickCount$ = toObservable(this.clickCount)
-  interval = signal<number>(0)
-  doubleInterval = computed(() => this.interval() * 2)
+  interval$ = interval(1000)
+  intervalSignal = toSignal(this.interval$, {initialValue: 0}) // pay attention that without initial value obseravle start with no value
+  // so initial value presented is empty
+  // but after adding initial value the obseravle that was returned from interval had no value
+  // but signal has initial value
+
+  // interval = signal<number>(0)
+  // doubleInterval = computed(() => this.interval() * 2)
   constructor(){
     // effect(()=> {
     //   console.log(`button was clicked ${this.clickCount()} times`)
