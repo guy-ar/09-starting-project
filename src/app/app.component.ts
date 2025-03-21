@@ -1,6 +1,6 @@
 import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { interval, map } from 'rxjs';
+import { interval, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +16,23 @@ export class AppComponent implements OnInit {
   // so initial value presented is empty
   // but after adding initial value the obseravle that was returned from interval had no value
   // but signal has initial value
-
+  
+  // new custom obsrvalbe - in the contractor it receive a fucntion with subscriber
+  //and every time we subscribe to the subscriber the function will be called
+  customInterval$ = new Observable((subscriber) => {
+    let completeCount = 0
+    const interval = setInterval(() => {
+      if (completeCount >= 5) {
+        // afte 5 tiems the observalbe is completed, and no more values will be emitted
+        clearInterval(interval)
+        subscriber.complete()
+        return;
+      }
+      console.log("Emitting new value ...")
+      subscriber.next({message: 'New Value'})
+      completeCount++
+    }, 2000) 
+  })
   // interval = signal<number>(0)
   // doubleInterval = computed(() => this.interval() * 2)
   constructor(){
@@ -42,14 +58,17 @@ export class AppComponent implements OnInit {
     //   subscription.unsubscribe()
     // });
     const subscription = this.clickCount$.subscribe({
-      next:  clickCount => 
-        {
-          console.log(`button was clicked ${clickCount} times`)
-        }
+      next:  clickCount => console.log(`button was clicked ${clickCount} times`)
+        ,
+      complete: () =>  console.log('button was clicked 5 times and completed')
+        ,
     })
     this.destroyRef.onDestroy(() => {
       subscription.unsubscribe()
     });
+    this.customInterval$.subscribe({
+      next: (val) => console.log(val)
+    })
   }
   // using signal that will be updated in each click
   onClick() {
